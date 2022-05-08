@@ -8,25 +8,37 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
 var err error
 
-const (
-	host     = "192.168.1.138"
-	port     = 5432
-	user     = "postgres"
-	password = "postgres"
-	dbname   = "recipe_app"
-)
-
 func init() {
+	log.Println("Load ENV file")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	port, err := strconv.Atoi(os.Getenv("POSTGRES_PORT"))
+	if err != nil {
+		log.Fatal("Error converting ENV POSTGRES_PORT to int")
+	}
+
 	log.Println("Connecting to Database")
-	postgresInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	postgresInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("PI_ADDR"),
+		port,
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_DATABASE"))
+
 	db, err = sql.Open("postgres", postgresInfo)
 	if err != nil {
 		log.Printf("Error connecting to rpi database: %s\n", err)
